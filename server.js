@@ -1,3 +1,6 @@
+const fs = require('fs');
+const path = require('path');
+
 const express = require('express');
 const bodyParser = require('body-parser');
 const mongoose = require('mongoose');
@@ -10,6 +13,18 @@ const app = express();
 
 app.use(bodyParser.json());
 
+app.use('/uploads/images', express.static(path.join('uploads', 'images')));
+
+app.use((req, res, next) => {
+  res.setHeader('Access-Control-Allow-Origin', '*');
+  res.setHeader(
+    'Access-Control-Allow-Headers',
+    'Origin, X-Requested-With, Content-Type, Accept, Authorization'
+  );
+  res.setHeader('Access-Control-Allow-Methods', 'GET, POST, PATCH, DELETE');
+  next();
+});
+
 //routes
 app.use('/api/places', placesRoutes);
 app.use('/api/users', usersRoutes);
@@ -21,6 +36,11 @@ app.use((req, res, next) => {
 
 //middleware function that executes when there is an error
 app.use((error, req, res, next) => {
+  if (req.file) {
+    fs.unlink(req.file.path, () => {
+      console.log(err);
+    });
+  }
   if (res.headerSent) {
     return next(error);
   }
@@ -31,7 +51,7 @@ app.use((error, req, res, next) => {
 
 mongoose
   .connect(
-    'mongodb://Ibtid:g0198tid12@cluster0-shard-00-00.uc1oq.mongodb.net:27017,cluster0-shard-00-01.uc1oq.mongodb.net:27017,cluster0-shard-00-02.uc1oq.mongodb.net:27017/places?ssl=true&replicaSet=atlas-703f7a-shard-0&authSource=admin&retryWrites=true&w=majority'
+    'mongodb://Ibtid:g0198tid12@cluster0-shard-00-00.uc1oq.mongodb.net:27017,cluster0-shard-00-01.uc1oq.mongodb.net:27017,cluster0-shard-00-02.uc1oq.mongodb.net:27017/mern?ssl=true&replicaSet=atlas-703f7a-shard-0&authSource=admin&retryWrites=true&w=majority'
   )
   .then(() => {
     app.listen(5000, () => {
